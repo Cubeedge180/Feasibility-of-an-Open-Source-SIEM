@@ -19,7 +19,9 @@ services:
   # Local LLM for alert triage. Opt-in because the model download is large.
   # Bound to localhost so the model is never exposed beyond the SIEM host.
   ollama:
-    image: ollama/ollama:latest
+    # Pinned for reproducible triage runs (thesis evidence). Change only on purpose
+    # and record the new tag + digest in the results.
+    image: ollama/ollama:0.40.14@sha256:ebaef4f4c5d93660e1f25f8ad085a112f51ccfb0e8458073e71793959dba91c9
     profiles: ["llm"]
     ports:
       - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"

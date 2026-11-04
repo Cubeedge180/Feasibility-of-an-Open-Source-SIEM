@@ -11,6 +11,10 @@ response action, as JSON matching [output_schema.json](output_schema.json).
 - `validate_output.py`: schema check plus the automatic grounding checks (cited
   fields exist in the alert, cited step ids exist in the given playbooks, the
   proposed action is allowed by a cited step).
+- `ollama_client.py`: one triage call to the local Ollama model. Always
+  temperature 0, a fixed seed and structured output against the schema; each
+  result record stores model tag + digest, Ollama version, prompt file SHA-256,
+  seed, condition, run and git commit (`-dirty` if tracked files changed).
 - `prompts/`: versioned prompts (to come).
 
 The model only proposes. A proposed action goes to the approval queue in

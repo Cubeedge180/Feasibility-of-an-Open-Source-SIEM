@@ -1,7 +1,7 @@
 [project]
 name = "accessible-siem"
 version = "0.0.1"
-description = "Lightweight SIEM for SMEs: Sigma detection-as-code and local LLM triage"
+description = "Lightweight SIEM for organisations without a dedicated SOC: Sigma detection-as-code and local LLM triage"
 requires-python = ">=3.12"
 
 [tool.pytest.ini_options]
