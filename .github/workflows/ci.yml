@@ -47,3 +47,17 @@ jobs:
       - run: pip install -r requirements-dev.txt
       - name: Rule and unit tests
         run: pytest -v
+
+  migrations:
+    # Applies db/migrations on a fresh PostgreSQL started from docker-compose.yml, then runs the
+    # schema smoke test. A failing migration makes the container unhealthy and --wait fail.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start PostgreSQL on a fresh volume
+        run: docker compose up -d --wait postgres
+      - name: Schema smoke test
+        run: docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U siem -d siem < db/tests/smoke.sql
+      - name: Container log on failure
+        if: failure()
+        run: docker compose logs postgres
