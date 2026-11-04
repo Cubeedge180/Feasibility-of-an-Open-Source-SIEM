@@ -104,6 +104,23 @@ writing [U2]. For the lab network use Host Only if you are on macOS 26 or later
 [U1]; otherwise use Shared Network and block internet on each VM with its
 firewall during runs **(unverified for the QEMU backend, check in pilot)**.
 Switching to VMware Fusion stays an option if cloning becomes a chore.
+On macOS 27 (this Mac runs 27.2) UTM 5 snapshots also work for
+Apple-Virtualization VMs [U2], so cloning is only needed on UTM 4.
+
+Disk, decided 2026-11-04: free space on the Mac rather than buy an external
+drive. To keep the footprint small:
+
+- **Reuse the existing Kali VM as the Linux endpoint (`lin`).** Kali is
+  Debian-based; install `auditd`, PowerShell 7 and the agents there. Kali is
+  not a named Wazuh agent platform **(unverified; the Debian package should
+  install, check in pilot)**.
+- **One server VM for both SIEMs.** Because each pass runs one SIEM, the
+  prototype stack and the Wazuh stack live in the same Ubuntu VM (4 vCPU /
+  8 GB) and only one is started at a time (`docker compose down` the other).
+  This also makes F2 the same box for both.
+- Budget: server VM about 60 GB (Wazuh asks for 50 GB [W1]), Windows 11 VM
+  64 GB (the Windows 11 minimum), plus 20-30 GB for snapshots, so **free
+  about 150 GB** before starting.
 
 Second-machine option: a used x86 mini PC (for example 8-core, 32 GB) running
 Proxmox VE removes every Windows-on-Arm question in section 4. Cost is a few
