@@ -76,6 +76,35 @@ What to do by Mac memory size:
 | 24-32 GB | Shrink win to 4 GB and lin to 1.5 GB; run Ollama only during triage, not during the attack and benign runs (MTTA is then measured in a separate replay step, record it). |
 | 16-18 GB | Cannot run both SIEMs at once. Run the matrix twice from snapshots (prototype pass, then Wazuh pass), or add a cheap second machine (below). |
 
+### This lab: MacBook Pro M4 Pro, 24 GB, UTM
+
+Both SIEMs plus both endpoints already need about 21-22 GB before macOS and
+the model, so the Mac would swap, and swapping corrupts the F2 and F5
+numbers. The plan for this Mac is therefore **one SIEM at a time**:
+
+1. Revert endpoints to `ready`, start the prototype VM only, run the attack
+   matrix, then the benign run. Ground truth goes to `ground-truth.csv`.
+2. Revert endpoints to `ready`, start the Wazuh VM only, and run the same
+   matrix with the same wrapper and the same benign activity plan.
+3. Endpoints run only the agent of the SIEM in that pass.
+4. Ollama runs natively on the Mac, at the same time as the prototype pass
+   (about 8 + 4 + 1.5 + 6 + 4 ≈ 23.5 GB, tight; if memory pressure turns
+   yellow, close every other app; if it still swaps, run triage as a replay
+   after the attack run and record that MTTA was measured on replay).
+
+This changes "same attack runs" to "same attack procedure from the same
+snapshot". Write that into `decision-log.md` and the limitations. The
+alternative that keeps one shared run is the second machine below.
+
+With UTM: use the **QEMU backend** for the Windows VM (Arm64 guest, no
+emulation), and keep repeatable states by **cloning each VM while it is shut
+down** (`clean-os`, `ready`, ...) instead of relying on snapshots, because
+UTM's built-in snapshots need UTM 5, which was a pre-release at time of
+writing [U2]. For the lab network use Host Only if you are on macOS 26 or later
+[U1]; otherwise use Shared Network and block internet on each VM with its
+firewall during runs **(unverified for the QEMU backend, check in pilot)**.
+Switching to VMware Fusion stays an option if cloning becomes a chore.
+
 Second-machine option: a used x86 mini PC (for example 8-core, 32 GB) running
 Proxmox VE removes every Windows-on-Arm question in section 4. Cost is a few
 hundred euros second hand **(unverified, check local prices)**. Only worth it
@@ -284,7 +313,7 @@ check clocks, then start. Export the VM settings (vCPU, RAM, disk) into
 
 | Component | Version | Source checked |
 |---|---|---|
-| macOS, Mac model, RAM | | |
+| macOS, Mac model, RAM | MacBook Pro M4 Pro, 24 GB; macOS version to fill in | |
 | VMware Fusion | | |
 | Ubuntu (siem, wazuh, lin) | 24.04 arm64 | |
 | Windows 11 on Arm build | | [M1] |
