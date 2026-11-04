@@ -16,6 +16,25 @@ services:
       retries: 3
     restart: unless-stopped
 
+  # Event, alert, triage and audit store. Not published on any host port: only services on
+  # the compose network reach it. db/migrations runs once, when the data volume is first created.
+  postgres:
+    image: postgres:17.11-alpine@sha256:266d3c257594e195b309ae9d1805e54c788f1d7b375f56bf6c367aac6c917e7b
+    environment:
+      POSTGRES_DB: siem
+      POSTGRES_USER: siem
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-siem-dev-only}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # TCP check: the init-time server listens on the socket only, so this passes after init.
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "siem", "-d", "siem"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   # Local LLM for alert triage. Opt-in because the model download is large.
   # Bound to localhost so the model is never exposed beyond the SIEM host.
   ollama:
@@ -31,3 +50,4 @@ services:
 
 volumes:
   ollama-data:
+  postgres-data:
