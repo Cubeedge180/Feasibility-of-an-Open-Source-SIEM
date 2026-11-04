@@ -82,18 +82,18 @@ Weeks start on Monday. W1 is the rest of this week.
 | Lucian | Note in a reply: UTM version, Windows build (`winver`), Kali version, each VM's network mode and IP, free disk. |
 | Lucian | From win and lin, `ping <mac-ip-on-UTM-network>` (on UTM Shared Network usually the `.1` address of the VM's subnet, unverified). |
 | Lucian | Take a UTM snapshot `clean-os` of win and lin (shut down first). If snapshots are not offered for the QEMU backend, tell Claude before cloning (disk). |
-| Claude | Write `lab/vms.md` from Lucian's answers (sizes, IPs, network mode, versions). |
+| Claude | Write the VM record (sizes, IPs, network mode, versions) to `../lab-local/vms.md` in the Licenta folder, outside the repo: real IPs never go into git. |
 | Claude | Compose: bind ingest to the Mac's UTM-network address via `.env` (not 0.0.0.0), check with `docker compose config --quiet`. |
 | Both | `docker compose up -d` on the Mac (Lucian; image pulls need internet); from win, `Invoke-WebRequest http://<mac-ip>:8000/health` returns OK. |
 
 Checkpoint W1: Docker capped at 4/8, both endpoints reach the ingest health check,
-`clean-os` snapshots exist, `lab/vms.md` committed.
+`clean-os` snapshots exist, local VM record written.
 
 **W2 (Nov 9-15): endpoint telemetry and clocks**
 
 | Who | Step |
 |---|---|
-| Claude | Add `lab/endpoints/windows/sysmon-config.xml` (one public config, pinned commit) and `lab/endpoints/linux/audit.rules` (pinned commit), with source and hash in `lab/vms.md`. |
+| Claude | Add `lab/endpoints/windows/sysmon-config.xml` (one public config, pinned commit) and `lab/endpoints/linux/audit.rules` (pinned commit), with source and hash in `lab/README.md`. |
 | Lucian | win: install `Sysmon64a.exe` (Arm64 build, not `Sysmon64.exe`) with that config; check events appear in `Microsoft-Windows-Sysmon/Operational`. |
 | Lucian | lin: install `auditd` and load the rules; install PowerShell 7. |
 | Lucian | Time: use the Mac as NTP server for the lab (Claude writes the commands), point win (`w32tm`) and lin at it, all logs in UTC. |
