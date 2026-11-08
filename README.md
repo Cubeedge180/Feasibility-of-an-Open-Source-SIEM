@@ -1,4 +1,4 @@
-# Accessible SIEM: detection-as-code and local AI triage
+# Feasibility of an Open-Source SIEM: A Comparative Study with Wazuh and Local LLM Triage
 
 A lightweight SIEM for organisations that cannot afford Splunk-class tools and
 have no dedicated SOC.
