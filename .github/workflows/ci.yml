@@ -14,6 +14,26 @@ env:
   ATTACK_DATA_BASE: https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack
 
 jobs:
+  secrets:
+    # Scans the full history for credentials and private IPs with the rules in .gitleaks.toml.
+    runs-on: ubuntu-latest
+    env:
+      GITLEAKS_VERSION: "8.30.1"
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks (pinned, checksum verified)
+        run: |
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "$tarball" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/$tarball"
+          echo "${GITLEAKS_SHA256}  $tarball" | sha256sum -c -
+          tar -xzf "$tarball" gitleaks
+      - name: Scan history
+        run: ./gitleaks git --redact --no-banner --config .gitleaks.toml .
+
   lint:
     runs-on: ubuntu-latest
     steps:
