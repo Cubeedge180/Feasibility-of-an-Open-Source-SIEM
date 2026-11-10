@@ -96,7 +96,7 @@ Checkpoint W1: Docker capped at 4/8, both endpoints reach the ingest health chec
 | Claude | Add `lab/endpoints/windows/sysmon-config.xml` (one public config, pinned commit) and `lab/endpoints/linux/audit.rules` (pinned commit), with source and hash in `lab/README.md`. |
 | Lucian | win: install `Sysmon64a.exe` (Arm64 build, not `Sysmon64.exe`) with that config; check events appear in `Microsoft-Windows-Sysmon/Operational`. |
 | Lucian | lin: install `auditd` and load the rules; install PowerShell 7. |
-| Lucian | Time: use the Mac as NTP server for the lab (Claude writes the commands), point win (`w32tm`) and lin at it, all logs in UTC. |
+| Lucian | Time: start the lab time server (`lab/ntp/`, chrony in Docker Desktop), point win (`w32tm`) and lin (chrony) at it, all logs in UTC. Commands in `lab/check_clocks.md`. |
 | Claude | `lab/check_clocks.md`: how to record the offset at start and end of each run. |
 
 Checkpoint W2: Sysmon and auditd events visible locally on each endpoint;
@@ -204,6 +204,28 @@ or replaced; benign plan tested.
 | W24 (Apr 12-18) | Prototype pass: F1 (3 timed installs), held-out + dev attack matrix from `ready`, F2 sampling, F6 run with internet reachable and a capture of the SIEM containers' network. |
 | W25 (Apr 19-25) | Wazuh pass from the same `ready` snapshot: default, then tuned. 24 h benign run per SIEM (F4). |
 | W26 (Apr 26 - May 2) | 2x2 run on the 80-alert set, blind rating, second rater on 20%, scoring incl. clustered bootstrap (still to be added to `eval/score_triage.py`, Claude, by March). |
+
+## 2b. Code track (runs alongside the lab weeks)
+
+The lab weeks above only list the code the lab steps need. The prototype itself
+also has to be finished; this is when. Each piece lands with tests and passes
+the CI checks. Claude drafts, Lucian reviews and must be able to explain every
+module at the defence, so each piece ends with a short walkthrough for Lucian.
+
+| Weeks | Code | Needed by |
+|---|---|---|
+| W2-W3 (Nov 9-22) | `normalize/`: Sysmon, Windows Security, auditd, auth.log to the common schema; `detect/`: rule loader, logsource routing, alert builder writing to PostgreSQL | W3 checkpoint (first real alert) |
+| W4-W5 (Nov 23 - Dec 6) | `agent/` installers finished; `lab/run_atomic.ps1`; `eval/match_alerts.py` | W5-W6 runs |
+| W6-W7 (Dec 7-20) | `ui/`: minimal alert list and alert detail | Demo, approval flow |
+| W9-W10 (Dec 28 - Jan 10) | Triage wired to stored alerts: normaliser text, playbooks, schema output, results records | 10-alert pilot (W11-W12) |
+| W14-W16 (Feb 1-21) | `response/` + `ui/`: human approval of proposed actions, audit log (MTTR); dev-set Sigma rules; F2 load-test and resource sampler | F2, approval claim, alert set |
+| W17-W20 (Feb 22 - Mar 21) | `eval/score_triage.py`: per-technique and technique-clustered bootstrap; wrong-playbook control runs | 2x2 analysis |
+| W21-W22 (Mar 22 - Apr 4) | Code freeze for detection: rules tagged `rules-frozen`; only bug fixes after this | prereg-v1, final runs |
+
+Today `detect/evaluator.py` evaluates a Sigma rule against one event in Python (the live
+pipeline around it is still to build). The PostgreSQL note (no pySigma PostgreSQL backend on PyPI)
+only matters if rules have to run as SQL queries over stored events; decide in
+W2 whether that is needed, before writing the alert builder.
 
 ## 3. Run order for each measured pass
 
