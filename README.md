@@ -19,6 +19,16 @@ Wazuh baseline.
 > endpoint, the remediation playbooks and the triage experiment tooling
 > (alert-to-text normaliser, output checks, blinding and scoring) exist so far.
 
+## What's new
+
+- **2026-11-15:** [`docs/project/`](docs/project/README.md) explains the goal, approach and
+  timeline in one place, and [CHANGELOG.md](CHANGELOG.md) lists every change by pull request.
+- **2026-11-10 (PR #9, open):** week-by-week lab plan, week 1-2 lab setup (pinned Sysmon and
+  auditd configs, lab time server) and secret scanning in CI.
+- **2026-11-04:** PostgreSQL schema, lab build guide, reproducible (seeded, pinned) triage calls.
+
+New here? Start with the [project overview](docs/project/README.md).
+
 ## What the thesis tests
 
 The [research design](docs/thesis/research-design.md) fixes the questions,
