@@ -1,0 +1,10 @@
+# Start (on the Mac, with a UTM VM running so the lab interface exists):
+#   NTP_BIND=<mac-lab-ip> docker compose -f lab/ntp/compose.yml up -d --build
+name: lab-ntp
+
+services:
+  ntp:
+    build: .
+    ports:
+      - "${NTP_BIND:-127.0.0.1}:123:123/udp"
+    restart: unless-stopped

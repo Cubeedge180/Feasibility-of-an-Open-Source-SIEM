@@ -6,3 +6,18 @@ venv/
 .ruff_cache/
 .env
 *.egg-info/
+
+# Never commit secrets, real lab data or local notes (see .gitleaks.toml)
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.pcap
+*.pcapng
+*.local.md
+lab-local/
+.DS_Store
