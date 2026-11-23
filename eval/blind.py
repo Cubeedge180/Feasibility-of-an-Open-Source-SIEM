@@ -7,7 +7,7 @@ Usage: python -m eval.blind <outputs.jsonl> <out_dir> [--seed N] [--run 1]
 
 Writes to <out_dir>:
     blinded.jsonl   records in shuffled order with a random output_id and no
-                    condition or run, for the rater
+                    condition, run or playbook_step_id, for the rater
     ratings.csv     empty rating sheet, one row per blinded output
     key.csv         output_id -> alert_id, condition, run (do not open before
                     rating is finished)
@@ -29,6 +29,15 @@ CONDITIONS = {"C1", "C2", "C3", "C4"}
 RATING_COLUMNS = ["grounded", "hallucinated", "steps_correct", "severity_agree", "unsafe"]
 
 
+def _without_step_ids(output: object) -> object:
+    """Copy of the output without playbook_step_id, which would reveal C2/C4 to the rater."""
+    if isinstance(output, dict):
+        return {k: _without_step_ids(v) for k, v in output.items() if k != "playbook_step_id"}
+    if isinstance(output, list):
+        return [_without_step_ids(v) for v in output]
+    return output
+
+
 def blind(records: list[dict], seed: int, run: int) -> tuple[list[dict], list[dict]]:
     chosen = [r for r in records if r["run"] == run]
     for r in chosen:
@@ -39,7 +48,13 @@ def blind(records: list[dict], seed: int, run: int) -> tuple[list[dict], list[di
     ids = rng.sample(range(10_000, 100_000), len(chosen))
     blinded, key = [], []
     for output_id, r in zip((f"O{i}" for i in ids), chosen, strict=True):
-        blinded.append({"output_id": output_id, "alert_id": r["alert_id"], "output": r["output"]})
+        blinded.append(
+            {
+                "output_id": output_id,
+                "alert_id": r["alert_id"],
+                "output": _without_step_ids(r["output"]),
+            }
+        )
         key.append(
             {
                 "output_id": output_id,

@@ -62,6 +62,15 @@ def test_regex_and_cidr():
     assert not matches(r, {"Query": "a" * 32 + ".evil.test", "SourceIp": "192.168.1.1"})
 
 
+def test_regex_flags_are_honoured():
+    r = rule("  sel:\n    CommandLine|re|i: 'invoke-mimikatz'\n  condition: sel\n")
+    assert matches(r, {"CommandLine": "powershell Invoke-Mimikatz"})
+    assert not matches(
+        rule("  sel:\n    CommandLine|re: 'invoke-mimikatz'\n  condition: sel\n"),
+        {"CommandLine": "Invoke-Mimikatz"},
+    )
+
+
 def test_unsupported_value_fails_loudly():
     r = rule("  sel:\n    Field|expand: '%placeholder%'\n  condition: sel\n")
     with pytest.raises(NotImplementedError):

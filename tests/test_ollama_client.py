@@ -60,6 +60,10 @@ def test_triage_record_has_reproducibility_metadata(info: RunInfo, prompt: Path)
     assert record["prompt_sha256"] == hashlib.sha256(b"You triage alerts.").hexdigest()
     assert record["git_commit"] == "deadbeef"
     assert (record["condition"], record["run"], record["seed"]) == ("C3", 1, 7)
+    assert record["input_text"] == "alert text"
+    assert record["input_sha256"] == hashlib.sha256(b"alert text").hexdigest()
+    assert sent[0]["messages"][1]["content"] == record["input_text"]
+    assert isinstance(record["latency_ms"], int) and record["latency_ms"] >= 0
 
 
 def test_non_json_output_is_kept_not_dropped(info: RunInfo, prompt: Path) -> None:
@@ -82,3 +86,11 @@ def test_run_info_collects_digest_and_version(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setattr(ollama_client, "git_commit", lambda: "deadbeef")
     got = run_info(_client([]), MODEL, seed=7)
     assert got == RunInfo(MODEL, DIGEST, "0.40.14", "deadbeef", 7)
+
+
+def test_run_info_refuses_dirty_tree(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ollama_client, "git_commit", lambda: "deadbeef-dirty")
+    with pytest.raises(RuntimeError, match="uncommitted"):
+        run_info(_client([]), MODEL, seed=7)
+    got = run_info(_client([]), MODEL, seed=7, allow_dirty=True)
+    assert got.git_commit == "deadbeef-dirty"
