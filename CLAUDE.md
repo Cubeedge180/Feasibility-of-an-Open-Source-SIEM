@@ -10,3 +10,13 @@ This repo declares its own Claude Code setup, so cloud and local sessions get th
 - **User-invoked** (never run unasked): `/grill-me`, `/grill-with-docs`, `/handoff`, `/to-spec`, `/to-tickets`, `/implement`, `/implement-spec`, `/code-review`, `/setup-matt-pocock-skills`. The spec chain publishes to the issue tracker and needs `/setup-matt-pocock-skills` run once first.
 
 Precedence when they pull apart: security and correctness first, then ponytail's minimalism, then process.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live in this repo's GitHub Issues. See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` at the root, ADRs in `docs/decisions/`. See `docs/agents/domain.md`.
