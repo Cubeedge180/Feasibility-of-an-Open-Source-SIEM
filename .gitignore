@@ -21,3 +21,7 @@ id_ed25519*
 *.local.md
 lab-local/
 .DS_Store
+
+# graphify: machine-specific interpreter and scan-root paths
+graphify-out/.graphify_python
+graphify-out/.graphify_root
