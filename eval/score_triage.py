@@ -73,6 +73,12 @@ def load(key_path: Path, ratings_path: Path) -> dict[str, dict[str, dict[str, fl
             raise ValueError(f"{k['alert_id']} has two ratings for {k['condition']}")
         data[k["alert_id"]][k["condition"]] = values
 
+    unrated = set(key) - {row["output_id"] for row in ratings}
+    if unrated:
+        raise ValueError(
+            f"{len(unrated)} output(s) in the key are not rated: {sorted(unrated)[:5]}"
+        )
+
     for alert_id, cells in data.items():
         missing = {"C1", "C2", "C3", "C4"} - set(cells)
         if missing:

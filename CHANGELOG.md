@@ -8,6 +8,10 @@ No measured results exist yet; entries describe code, documents and lab setup on
 
 ## Unreleased (open pull requests)
 
+- **Evidence-check fixes from the 2026-11-23 audit** (this PR): blinded outputs no longer show
+  `playbook_step_id` (it revealed C2/C4 to the rater); `score_triage` refuses key outputs with no
+  rating; Sigma `|re|i`, `|re|m`, `|re|s` flags are honoured; triage records store input text,
+  input SHA-256 and latency; `run_info()` refuses uncommitted code unless `allow_dirty=True`.
 - **Project overview and changelog** (this PR): `docs/project/` with goal, approach, timeline and
   an index of all documents; snapshots of the project brief and thesis plan; literature search
   notes; this changelog; a "What's new" section in the README.

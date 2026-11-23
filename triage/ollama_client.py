@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -35,10 +36,6 @@ class RunInfo:
     ollama_version: str
     git_commit: str
     seed: int
-
-
-def sha256_file(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def git_commit(repo: Path | None = None) -> str:
@@ -73,12 +70,22 @@ def ollama_version(client: httpx.Client) -> str:
     return str(response.json()["version"])
 
 
-def run_info(client: httpx.Client, model: str, seed: int = DEFAULT_SEED) -> RunInfo:
+def run_info(
+    client: httpx.Client, model: str, seed: int = DEFAULT_SEED, allow_dirty: bool = False
+) -> RunInfo:
+    """Setup facts for a batch. Refuses uncommitted code unless allow_dirty (pilot only):
+
+    results must name the exact commit, and triage_outputs.git_commit accepts only a
+    clean 40-hex commit, so a dirty run would fail later, after the model time is spent.
+    """
+    commit = git_commit()
+    if commit.endswith("-dirty") and not allow_dirty:
+        raise RuntimeError(f"tracked files have uncommitted changes ({commit}); commit first")
     return RunInfo(
         model=model,
         model_digest=model_digest(client, model),
         ollama_version=ollama_version(client),
-        git_commit=git_commit(),
+        git_commit=commit,
         seed=seed,
     )
 
@@ -109,15 +116,17 @@ def triage(
     """One triage output plus its reproducibility metadata, as one results record.
 
     The record keeps the fields eval/blind.py reads (alert_id, condition, run,
-    output). If the model returns text that is not JSON, output is None and the
-    raw text is kept, so the failure is counted, not dropped.
+    output), plus the exact input text sent and its SHA-256 (triage_outputs needs
+    both). If the model returns text that is not JSON, output is None and the raw
+    text is kept, so the failure is counted, not dropped.
     """
     if condition not in CONDITIONS:
         raise ValueError(f"unknown condition {condition!r}")
-    body = chat_request(
-        info.model, prompt_file.read_text(encoding="utf-8"), user_content, info.seed
-    )
+    prompt = prompt_file.read_bytes()
+    body = chat_request(info.model, prompt.decode("utf-8"), user_content, info.seed)
+    started = time.monotonic()
     response = client.post("/api/chat", json=body)
+    latency_ms = round((time.monotonic() - started) * 1000)
     response.raise_for_status()
     raw = response.json()["message"]["content"]
     try:
@@ -134,7 +143,10 @@ def triage(
         "model_digest": info.model_digest,
         "ollama_version": info.ollama_version,
         "prompt_file": prompt_file.name,
-        "prompt_sha256": sha256_file(prompt_file),
+        "prompt_sha256": hashlib.sha256(prompt).hexdigest(),
+        "input_text": user_content,
+        "input_sha256": hashlib.sha256(user_content.encode("utf-8")).hexdigest(),
+        "latency_ms": latency_ms,
         "seed": info.seed,
         "temperature": 0,
         "git_commit": info.git_commit,

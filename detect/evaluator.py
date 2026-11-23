@@ -27,11 +27,18 @@ from sigma.types import (
     SigmaNull,
     SigmaNumber,
     SigmaRegularExpression,
+    SigmaRegularExpressionFlag,
     SigmaString,
     SpecialChars,
 )
 
 Event = dict[str, Any]
+
+REGEX_FLAGS = {
+    SigmaRegularExpressionFlag.IGNORECASE: re.IGNORECASE,
+    SigmaRegularExpressionFlag.MULTILINE: re.MULTILINE,
+    SigmaRegularExpressionFlag.DOTALL: re.DOTALL,
+}
 
 
 def load_rule(path: str | Path) -> SigmaRule:
@@ -72,7 +79,10 @@ def _match_value(expected: Any, actual: Any) -> bool:
         # Sigma string matching is case-insensitive and anchored.
         return _wildcard_regex(expected).fullmatch(str(actual)) is not None
     if isinstance(expected, SigmaRegularExpression):
-        return re.search(str(expected.regexp), str(actual)) is not None
+        flags = 0
+        for flag in expected.flags:
+            flags |= REGEX_FLAGS[flag]
+        return re.search(str(expected.regexp), str(actual), flags) is not None
     if isinstance(expected, SigmaCIDRExpression):
         try:
             return ipaddress.ip_address(str(actual)) in expected.network

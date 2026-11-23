@@ -14,7 +14,8 @@ response action, as JSON matching [output_schema.json](output_schema.json).
 - `ollama_client.py`: one triage call to the local Ollama model. Always
   temperature 0, a fixed seed and structured output against the schema; each
   result record stores model tag + digest, Ollama version, prompt file SHA-256,
-  seed, condition, run and git commit (`-dirty` if tracked files changed).
+  seed, condition, run, git commit, the exact input text with its SHA-256, and latency.
+  `run_info()` refuses a tree with uncommitted changes unless `allow_dirty=True` (pilot only).
 - `prompts/`: versioned prompts (to come).
 
 The model only proposes. A proposed action goes to the approval queue in
