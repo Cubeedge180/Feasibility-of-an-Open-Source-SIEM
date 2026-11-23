@@ -1,6 +1,10 @@
 """Score the 2 x 2 triage experiment from the blinded ratings.
 
-Usage: python -m eval.score_triage <key.csv> <ratings.csv> <out.json>
+Usage: python -m eval.score_triage <key.csv> <ratings.csv> <alerts.csv> <out.json>
+
+<alerts.csv> has columns alert_id,technique: the one ATT&CK technique whose
+playbook and rule each alert belongs to (benign alerts: the technique of the
+rule that fired), taken from the reference labels.
 
 Implements the analysis fixed in docs/thesis/research-design.md, section 4.5:
 
@@ -14,6 +18,10 @@ Implements the analysis fixed in docs/thesis/research-design.md, section 4.5:
   dropped. Reported with the mean difference, a bootstrap 95% CI and the
   matched-pairs rank-biserial correlation as effect size.
 - Every other measure x factor pair is reported two-sided as exploratory.
+- Clustering (section 4.5): variants of one technique are correlated, so each
+  test is repeated on per-technique mean differences, with a bootstrap CI that
+  resamples whole techniques. Where the two verdicts disagree, the clustered
+  one is the one the claim relies on (claim_supported).
 """
 
 from __future__ import annotations
@@ -86,6 +94,22 @@ def load(key_path: Path, ratings_path: Path) -> dict[str, dict[str, dict[str, fl
     return dict(data)
 
 
+def load_techniques(path: Path, data: dict) -> dict[str, str]:
+    """{alert_id: technique} for every rated alert; raises on a gap or a duplicate."""
+    with path.open(encoding="utf-8", newline="") as f:
+        rows = list(csv.DictReader(f))
+    techniques: dict[str, str] = {}
+    for row in rows:
+        alert_id, technique = row["alert_id"].strip(), (row.get("technique") or "").strip()
+        if alert_id in techniques:
+            raise ValueError(f"{alert_id} is listed twice in {path.name}")
+        techniques[alert_id] = technique
+    missing = sorted(a for a in data if not techniques.get(a))
+    if missing:
+        raise ValueError(f"{len(missing)} rated alert(s) have no technique: {missing[:5]}")
+    return {a: techniques[a] for a in data}
+
+
 def differences(data, factor: str, measure: str) -> np.ndarray:
     with_, without = FACTORS[factor]
     return np.array(
@@ -97,9 +121,8 @@ def differences(data, factor: str, measure: str) -> np.ndarray:
     )
 
 
-def test(d: np.ndarray, alternative: str) -> dict:
-    rng = np.random.default_rng(SEED)
-    boot = rng.choice(d, size=(BOOTSTRAP_SAMPLES, len(d)), replace=True).mean(axis=1)
+def _signed_rank(d: np.ndarray, alternative: str) -> dict:
+    """Wilcoxon signed-rank with zero differences dropped, plus rank-biserial r."""
     nonzero = d[d != 0]
     if len(nonzero) == 0:
         p, r = 1.0, 0.0
@@ -107,30 +130,72 @@ def test(d: np.ndarray, alternative: str) -> dict:
         p = float(wilcoxon(nonzero, alternative=alternative).pvalue)
         ranks = rankdata(np.abs(nonzero))
         r = float((ranks[nonzero > 0].sum() - ranks[nonzero < 0].sum()) / ranks.sum())
+    return {"n_nonzero": int(len(nonzero)), "p_value": p, "rank_biserial": r}
+
+
+def _ci95(boot: np.ndarray) -> list[float]:
+    return [float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))]
+
+
+def test(d: np.ndarray, alternative: str) -> dict:
+    rng = np.random.default_rng(SEED)
+    boot = rng.choice(d, size=(BOOTSTRAP_SAMPLES, len(d)), replace=True).mean(axis=1)
     return {
         "n_alerts": len(d),
-        "n_nonzero": int(len(nonzero)),
         "mean_difference": float(d.mean()),
-        "ci95": [float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5))],
+        "ci95": _ci95(boot),
         "alternative": alternative,
-        "p_value": p,
-        "rank_biserial": r,
-    }
+    } | _signed_rank(d, alternative)
 
 
-def score(data) -> dict:
+def clustered_test(d: np.ndarray, techniques, alternative: str) -> dict:
+    """The same test on per-technique means, with a technique-clustered bootstrap CI.
+
+    The CI is for the per-alert mean difference, but each resample draws whole
+    techniques (with all their alerts), so correlated variants count once.
+    """
+    labels, index = np.unique(np.asarray(techniques), return_inverse=True)
+    sums = np.bincount(index, weights=d)
+    counts = np.bincount(index)
+    rng = np.random.default_rng(SEED)
+    draw = rng.integers(0, len(labels), size=(BOOTSTRAP_SAMPLES, len(labels)))
+    boot = sums[draw].sum(axis=1) / counts[draw].sum(axis=1)
+    return {
+        "n_techniques": len(labels),
+        "mean_difference": float(d.mean()),
+        "ci95": _ci95(boot),
+        "alternative": alternative,
+    } | _signed_rank(sums / counts, alternative)
+
+
+def _with_clustered(d: np.ndarray, techniques, alternative: str) -> dict:
+    result = test(d, alternative)
+    clustered = clustered_test(d, techniques, alternative)
+    clustered["supported"] = clustered["p_value"] < ALPHA
+    result["supported"] = result["p_value"] < ALPHA
+    result["clustered"] = clustered
+    result["agree"] = result["supported"] == clustered["supported"]
+    return result
+
+
+def score(data, techniques: dict[str, str]) -> dict:
     cells = {
         c: {m: float(np.mean([a[c][m] for a in data.values()])) for m in MEASURES}
         for c in ("C1", "C2", "C3", "C4")
     }
+    order = [techniques[a] for a in sorted(data)]  # same order as differences()
     hypotheses = {}
     for name, (factor, measure, alternative) in HYPOTHESES.items():
-        result = test(differences(data, factor, measure), alternative)
-        result |= {"factor": factor, "measure": measure, "supported": result["p_value"] < ALPHA}
+        result = _with_clustered(differences(data, factor, measure), order, alternative)
+        result |= {
+            "factor": factor,
+            "measure": measure,
+            "claim_supported": result["clustered"]["supported"],
+        }
         hypotheses[name] = result
     primary = {(f, m) for f, m, _ in HYPOTHESES.values()}
     exploratory = [
-        {"factor": f, "measure": m} | test(differences(data, f, m), "two-sided")
+        {"factor": f, "measure": m} | _with_clustered(differences(data, f, m), order, "two-sided")
         for f in FACTORS
         for m in MEASURES
         if (f, m) not in primary
@@ -144,16 +209,20 @@ def score(data) -> dict:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 3:
+    if len(argv) != 4:
         print(__doc__.splitlines()[2])
         return 2
-    result = score(load(Path(argv[0]), Path(argv[1])))
-    Path(argv[2]).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    data = load(Path(argv[0]), Path(argv[1]))
+    result = score(data, load_techniques(Path(argv[2]), data))
+    Path(argv[3]).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     for name, h in result["hypotheses"].items():
-        verdict = "supported" if h["supported"] else "not supported"
+        c = h["clustered"]
+        verdict = "supported" if h["claim_supported"] else "not supported"
         print(
             f"{name} ({h['factor']} -> {h['measure']}): mean diff {h['mean_difference']:+.3f}, "
-            f"p={h['p_value']:.4f}, {verdict}"
+            f"per-alert p={h['p_value']:.4f}, clustered p={c['p_value']:.4f} "
+            f"({c['n_techniques']} techniques) -> {verdict}"
+            + ("" if h["agree"] else " [per-alert and clustered disagree; claim uses clustered]")
         )
     return 0
 

@@ -2,10 +2,12 @@ import csv
 import json
 import random
 
+import numpy as np
 import pytest
 
 from eval.blind import RATING_COLUMNS, blind
-from eval.score_triage import load, score
+from eval.score_triage import clustered_test, load, load_techniques, score
+from eval.score_triage import test as per_alert_test
 
 
 def _records(n_alerts=40):
@@ -61,18 +63,23 @@ def _write(tmp_path, effect: bool):
             p_halluc = 0.1 if effect and normalised else 0.5
             steps = 0.9 if effect and playbook else 0.5
             w.writerow([k["output_id"], 1, int(rng.random() < p_halluc), steps, 1, 0])
-    return load(tmp_path / "key.csv", tmp_path / "ratings.csv")
+    with (tmp_path / "alerts.csv").open("w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["alert_id", "technique"])
+        w.writerows([f"A{a}", f"T{a % 8}"] for a in range(40))
+    data = load(tmp_path / "key.csv", tmp_path / "ratings.csv")
+    return data, load_techniques(tmp_path / "alerts.csv", data)
 
 
 def test_effects_are_detected(tmp_path):
-    result = score(_write(tmp_path, effect=True))
+    result = score(*_write(tmp_path, effect=True))
     assert result["hypotheses"]["H1"]["supported"]
     assert result["hypotheses"]["H1"]["mean_difference"] < 0
     assert result["hypotheses"]["H2"]["supported"]
 
 
 def test_no_effect_is_not_supported(tmp_path):
-    result = score(_write(tmp_path, effect=False))
+    result = score(*_write(tmp_path, effect=False))
     assert not result["hypotheses"]["H2"]["supported"]
     assert result["hypotheses"]["H2"]["p_value"] == 1.0
 
@@ -95,3 +102,29 @@ def test_alert_missing_from_ratings_is_an_error(tmp_path):
     (tmp_path / "ratings.csv").write_text("\n".join(kept) + "\n")
     with pytest.raises(ValueError, match="not rated"):
         load(tmp_path / "key.csv", tmp_path / "ratings.csv")
+
+
+def test_clustered_ci_is_wider_when_variants_of_a_technique_are_identical():
+    # 8 techniques x 5 identical variants: only 8 independent values, not 40.
+    d = np.repeat([-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2], 5)
+    techniques = np.repeat([f"T{i}" for i in range(8)], 5)
+    per_alert_ci = np.diff(per_alert_test(d, "less")["ci95"])[0]
+    clustered = clustered_test(d, techniques, "less")
+    assert np.diff(clustered["ci95"])[0] > 1.5 * per_alert_ci
+
+
+def test_clustered_wilcoxon_uses_one_value_per_technique():
+    d = np.repeat([-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2], 5)
+    techniques = np.repeat([f"T{i}" for i in range(8)], 5)
+    clustered = clustered_test(d, techniques, "less")
+    assert clustered["n_techniques"] == 8
+    assert clustered["n_nonzero"] == 7
+
+
+def test_alert_missing_from_alerts_csv_is_an_error(tmp_path):
+    data, _ = _write(tmp_path, effect=False)
+    rows = (tmp_path / "alerts.csv").read_text().splitlines()
+    kept = [r for r in rows if not r.startswith("A3,")]
+    (tmp_path / "alerts.csv").write_text("\n".join(kept) + "\n")
+    with pytest.raises(ValueError, match="A3"):
+        load_techniques(tmp_path / "alerts.csv", data)

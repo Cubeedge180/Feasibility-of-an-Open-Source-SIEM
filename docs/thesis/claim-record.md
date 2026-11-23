@@ -55,8 +55,9 @@ The measurements are defined in `research-design.md` (frozen by tag
 - `triage/validate_output.py` runs the automatic checks that count towards
   `hallucinated` and rejects actions not allowed by a playbook.
 - `eval/blind.py` hides the condition before rating.
-- `eval/score_triage.py` computes the H1 and H2 tests. The technique-clustered
-  analysis the claim relies on is not in it yet (`research-design.md` 4.5).
+- `eval/score_triage.py` computes the H1 and H2 tests, per alert and
+  technique-clustered; the clustered verdict (`claim_supported`) is the one
+  the claim relies on (`research-design.md` 4.5).
 
 ## Change log
 
