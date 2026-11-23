@@ -14,7 +14,8 @@ No measured results exist yet; entries describe code, documents and lab setup on
   and auth.log into events with native Sigma field names. `POST /v1/events` stores each event with
   its raw record, runs the Sigma rules inline and writes alerts in the same transaction;
   unparseable records go to the new `ingest_rejects` table (migration 0005). CI runs the ingest
-  tests against PostgreSQL.
+  tests against PostgreSQL. Windows agent: one input per channel and a restart-on-1102 task,
+  because Fluent Bit stalls after the Security log is cleared (D12).
 - **Knowledge graph and clustered scoring** (#13): `graphify-out/` holds a graphify knowledge graph
   of code and docs, kept current by a Stop hook (`.claude/hooks/graphify-stale.sh`).
   `score_triage` takes a required `alerts.csv` (one technique per alert) and repeats every test on

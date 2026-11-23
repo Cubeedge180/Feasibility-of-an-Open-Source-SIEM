@@ -112,8 +112,9 @@ clock offset under 1 s on both (target; record the value).
 
 Checkpoint W3: one real end-to-end alert from win stored in the database.
 
-Status 2026-11-23: agent, normalisers and inline detection built (D11, `agent/README.md`);
-the installer runs and the `wevtutil cl Security` check are Lucian's next steps.
+Status 2026-11-23: checkpoint met. Agents installed on win and lin; alert 1
+(`win_security_log_cleared`) stored from a real `wevtutil cl Security`. The run exposed an
+agent stall after a log clear, worked around in D12.
 
 **W4 (Nov 23-29): Wazuh baseline and the Arm risk**
 

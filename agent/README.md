@@ -26,6 +26,10 @@ git. The installer checks the ingest health endpoint first, verifies the downloa
 Windows, apt signature on Linux), validates the config with `--dry-run`, then starts the
 service.
 
+Known issue (D12): Fluent Bit 5.1.3 stops reading Windows event logs after the Security log
+is cleared, until it restarts. Each channel is a separate input, and the installer adds a
+scheduled task "SIEM agent restart on log clear" that restarts the service on event 1102.
+
 Known limits: plain HTTP on the isolated lab network (the token is visible to anyone who can
 sniff that network; TLS is out of scope, D4); the Linux repo codename is fixed to `bookworm`
 because Kali has none of its own (override with `FLUENT_BIT_CODENAME`).

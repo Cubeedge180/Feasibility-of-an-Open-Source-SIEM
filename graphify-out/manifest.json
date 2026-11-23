@@ -510,10 +510,10 @@
     "semantic_hash": "f818507a7be430da0bbc9d622c789f90"
   },
   "CHANGELOG.md": {
-    "mtime": 1795432332.364857,
-    "seen": 1795432848.8212607,
-    "ast_hash": "3c84198368419c30061c64e63a47012a",
-    "semantic_hash": "3c84198368419c30061c64e63a47012a"
+    "mtime": 1795436412.7352865,
+    "seen": 1795436416.5173097,
+    "ast_hash": "af2e8301602ff5a59bc01d6bd05c07cd",
+    "semantic_hash": ""
   },
   "CLAUDE.md": {
     "mtime": 1795431288.0808606,
@@ -528,10 +528,10 @@
     "semantic_hash": "ab138399ae7b905b9f12db15c797150a"
   },
   "agent/README.md": {
-    "mtime": 1795432267.678535,
-    "seen": 1795432848.8212626,
-    "ast_hash": "16ed4d3c3a442c22a9a625a15a8890d8",
-    "semantic_hash": "16ed4d3c3a442c22a9a625a15a8890d8"
+    "mtime": 1795436412.734712,
+    "seen": 1795436416.5173135,
+    "ast_hash": "458e83408c65267982a5eec0dcbec3fe",
+    "semantic_hash": ""
   },
   "detect/README.md": {
     "mtime": 1795106336.63018,
@@ -576,10 +576,10 @@
     "semantic_hash": "0ae48dad7b368f019604a576b56265bc"
   },
   "docs/lab-phase-plan.md": {
-    "mtime": 1795432332.3646417,
-    "seen": 1795432848.821266,
-    "ast_hash": "1ad12ea08319d5b29d839431ee3c7c30",
-    "semantic_hash": "1ad12ea08319d5b29d839431ee3c7c30"
+    "mtime": 1795436412.7350543,
+    "seen": 1795436416.5173235,
+    "ast_hash": "33d9e225de75092b4cb4ac97fa266750",
+    "semantic_hash": ""
   },
   "docs/project/README.md": {
     "mtime": 1795431288.0830467,
@@ -624,10 +624,10 @@
     "semantic_hash": "a34acd09ab09383264122bf6f00272ab"
   },
   "docs/thesis/decision-log.md": {
-    "mtime": 1795432332.3639786,
-    "seen": 1795432848.8212676,
-    "ast_hash": "3cf175fa9ec5aa2ac97bce789e18e7e7",
-    "semantic_hash": "3cf175fa9ec5aa2ac97bce789e18e7e7"
+    "mtime": 1795436412.7341354,
+    "seen": 1795436416.5173337,
+    "ast_hash": "6aab4025fe022a8ab7cb8e85fbea9c15",
+    "semantic_hash": ""
   },
   "docs/thesis/defendability-review.md": {
     "mtime": 1795106336.630703,
@@ -732,10 +732,10 @@
     "semantic_hash": "9a4aa3eefbdf86a42609f2736025f2e7"
   },
   "agent/windows/install.ps1": {
-    "mtime": 1795432282.0900218,
-    "seen": 1795432848.8211858,
-    "ast_hash": "2d5c4f09d9a8efa009dc1634f86ac333",
-    "semantic_hash": "2d5c4f09d9a8efa009dc1634f86ac333"
+    "mtime": 1795436377.0202076,
+    "seen": 1795436416.517162,
+    "ast_hash": "73f6910f22af3d3d5dbd31eb8dd900f6",
+    "semantic_hash": ""
   },
   "db/migrations/0005_ingest_rejects.sql": {
     "mtime": 1795431954.9220538,
@@ -774,10 +774,10 @@
     "semantic_hash": "5513fdcbdb7a719f1d5f93ba569fbaf3"
   },
   "tests/test_agent.py": {
-    "mtime": 1795432308.9678798,
-    "seen": 1795432848.8212352,
-    "ast_hash": "2f888a079e0b0ed25455da9fe196c744",
-    "semantic_hash": "2f888a079e0b0ed25455da9fe196c744"
+    "mtime": 1795436377.020555,
+    "seen": 1795436416.5172515,
+    "ast_hash": "c1e15312e1bbb7d9052062cb29354191",
+    "semantic_hash": ""
   },
   "tests/test_normalize.py": {
     "mtime": 1795431901.0198555,

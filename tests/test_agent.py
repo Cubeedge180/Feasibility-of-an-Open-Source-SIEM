@@ -26,3 +26,12 @@ def test_buffering_survives_outages(os_dir: str, installer: str) -> None:
     assert re.search(r"Retry_Limit\s+no_limits", template)
     assert re.search(r"storage\.total_limit_size\s+500M", template)
     assert len(re.findall(r"storage\.type\s+filesystem", template)) == template.count("[INPUT]")
+
+
+def test_windows_channels_are_separate_inputs_and_restart_on_clear() -> None:
+    template = (AGENT / "windows" / "fluent-bit.conf").read_text(encoding="utf-8")
+    channels = re.findall(r"^\s*Channels\s+(\S+)$", template, re.MULTILINE)
+    assert channels == ["Security", "Microsoft-Windows-Sysmon/Operational"]
+    assert len(set(re.findall(r"^\s*DB\s+(\S+)$", template, re.MULTILINE))) == 2
+    script = (AGENT / "windows" / "install.ps1").read_text(encoding="utf-8")
+    assert "EventID=1102" in script and "Restart-Service fluent-bit" in script

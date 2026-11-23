@@ -68,6 +68,13 @@ if (-not (Get-Service fluent-bit -ErrorAction SilentlyContinue)) {
     New-Service -Name fluent-bit -BinaryPathName "`"$Exe`" -c `"$Conf`"" -StartupType Automatic `
         -DisplayName 'Fluent Bit (SIEM agent)' | Out-Null
 }
+# Workaround (D12): Fluent Bit stops reading after the Security log is cleared until it
+# restarts, so restart it whenever event 1102 (log cleared) is written.
+$restart = 'powershell.exe -NoProfile -WindowStyle Hidden -Command Start-Sleep 2; Restart-Service fluent-bit'
+schtasks.exe /Create /F /TN 'SIEM agent restart on log clear' /RU SYSTEM /SC ONEVENT /EC Security `
+    /MO '*[System[(EventID=1102)]]' /TR $restart | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'Could not create the restart-on-log-clear task.' }
+
 Start-Service fluent-bit
 Start-Sleep 3
 if ((Get-Service fluent-bit).Status -ne 'Running') { throw 'fluent-bit service did not start; check Event Viewer > Application.' }
