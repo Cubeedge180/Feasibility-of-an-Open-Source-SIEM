@@ -8,7 +8,7 @@ BEGIN;
 
 DO $$
 BEGIN
-    ASSERT (SELECT count(*) FROM schema_migrations) = 4, 'expected 4 applied migrations';
+    ASSERT (SELECT count(*) FROM schema_migrations) = 5, 'expected 5 applied migrations';
 END;
 $$;
 
@@ -38,6 +38,9 @@ SELECT rule_version_id, now(), now(), 'lab-win-01', 'high' FROM rules;
 
 INSERT INTO alert_events (alert_id, event_id)
 SELECT alert_id, event_id FROM alerts, events;
+
+INSERT INTO ingest_rejects (tag, error, record)
+VALUES ('auth', 'auth.log line not in RFC 3339 rsyslog format', '{"log": "x"}');
 
 INSERT INTO triage_outputs (alert_id, condition, model_tag, model_digest, ollama_version,
                             temperature, seed, prompt_path, prompt_sha256, input_format,

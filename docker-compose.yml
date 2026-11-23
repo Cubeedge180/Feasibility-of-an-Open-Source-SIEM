@@ -11,6 +11,16 @@ services:
       # Host address the API listens on. Default localhost; in the lab set INGEST_BIND to the
       # Mac's UTM-network address (local file, not in git) so only the VMs can reach it.
       - "${INGEST_BIND:-127.0.0.1}:${INGEST_PORT:-8000}:8000"
+    environment:
+      DATABASE_URL: postgresql://siem:${POSTGRES_PASSWORD:-siem-dev-only}@postgres:5432/siem
+      INGEST_TOKEN: ${INGEST_TOKEN:-}
+    volumes:
+      # Rules are read at start (restart ingest to reload); .git gives the commit they come from.
+      - ./rules:/app/rules:ro
+      - ./.git:/app/.git:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s

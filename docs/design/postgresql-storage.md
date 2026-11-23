@@ -52,6 +52,10 @@ off-host would close that gap and is out of scope (D4).
 
 ## Detection: Sigma compiled to SQL
 
+**Status 2026-11-23 (D11):** the prototype detects inline instead: ingest runs
+`detect/evaluator.py` on each event and writes the alert in the same transaction. The SQL plan
+below is kept as the option if the F2 load test shows the inline path cannot keep up.
+
 **Backend check (2026-11-04, PyPI JSON API and a web search).** There is no
 `pySigma-backend-postgresql` (or `-postgres`, `-sql`) on PyPI. The only SQL backend from
 SigmaHQ is `pySigma-backend-sqlite` (2.1.1 needs pySigma ≥ 2; 2.0.0 declares

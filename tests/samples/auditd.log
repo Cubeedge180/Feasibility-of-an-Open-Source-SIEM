@@ -1,0 +1,1 @@
+type=SYSCALL msg=audit(1795429200.123:456): arch=c00000b7 syscall=221 success=yes exit=0 a0=aaaad0 a1=aaaae0 ppid=1000 pid=1001 auid=1000 uid=0 comm="bash" exe="/usr/bin/bash" key="susp_activity"ARCH=aarch64 SYSCALL=execve AUID="lucian" UID="root"
