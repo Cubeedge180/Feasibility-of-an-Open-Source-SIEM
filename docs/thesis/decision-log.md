@@ -9,6 +9,10 @@ change gets a new row that refers to the earlier one.
 where the supervisor's approval is still needed. Supervisor approval is not
 recorded until it exists.
 
+The design these decisions change is `research-design.md`; its frozen version
+is git tag `prereg-v1` (D5). What the design lets the thesis claim is in
+`claim-record.md`.
+
 | # | Date | Decision | Trigger | Exact change | Unchanged core | Affects | Approved by |
 |---|---|---|---|---|---|---|---|
 | D1 | 2026-10-14 | Choose research design Option C | Plan showed the three earlier RQs described a system without a falsifiable claim | RQ1 feasibility scorecard with pre-set thresholds vs Wazuh; RQ2 2x2 triage experiment; old ATT&CK-coverage RQ folded into RQ1 | Building the prototype and comparing it with a baseline | `thesis-plan.md`, `research-design.md` | Lucian; supervisor pending |

@@ -46,8 +46,21 @@ prototype detects better than Wazuh outside the held-out technique set.
 - Rater agreement (Cohen's kappa) is too low for hallucination to be trusted.
 - Reference labels or playbooks are found to be copied from each other.
 
+## Where the evidence comes from
+
+The measurements are defined in `research-design.md` (frozen by tag
+`prereg-v1`, decision D5). The code that produces the RQ2 evidence:
+
+- `triage/normalise_text.py` builds the normalised alert text (C3, C4).
+- `triage/validate_output.py` runs the automatic checks that count towards
+  `hallucinated` and rejects actions not allowed by a playbook.
+- `eval/blind.py` hides the condition before rating.
+- `eval/score_triage.py` computes the H1 and H2 tests. The technique-clustered
+  analysis the claim relies on is not in it yet (`research-design.md` 4.5).
+
 ## Change log
 
 | Date | Change | Reason | Approved by |
 |---|---|---|---|
 | 2026-10-21 | First draft | Defendability review against the Student's Guide | pending |
+| 2026-11-23 | Added "Where the evidence comes from"; claim wording unchanged | Link the claim to the code that produces its evidence | Lucian |
