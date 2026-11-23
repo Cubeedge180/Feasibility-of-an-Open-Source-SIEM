@@ -8,6 +8,13 @@ No measured results exist yet; entries describe code, documents and lab setup on
 
 ## Unreleased (open pull requests)
 
+- **Week 3 agent, normalisers and inline detection** (this PR, D11): `agent/` has Fluent Bit 5.1.3
+  configs and one-command installers for Windows (Security + Sysmon) and Kali (auditd + auth.log,
+  installs rsyslog), with an on-disk buffer and token auth. `normalize/` parses event XML, auditd
+  and auth.log into events with native Sigma field names. `POST /v1/events` stores each event with
+  its raw record, runs the Sigma rules inline and writes alerts in the same transaction;
+  unparseable records go to the new `ingest_rejects` table (migration 0005). CI runs the ingest
+  tests against PostgreSQL.
 - **Knowledge graph and clustered scoring** (#13): `graphify-out/` holds a graphify knowledge graph
   of code and docs, kept current by a Stop hook (`.claude/hooks/graphify-stale.sh`).
   `score_triage` takes a required `alerts.csv` (one technique per alert) and repeats every test on

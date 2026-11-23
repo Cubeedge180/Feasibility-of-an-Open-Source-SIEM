@@ -103,3 +103,29 @@ def _wildcard_regex(value: SigmaString) -> re.Pattern[str]:
         else:
             raise NotImplementedError(f"unsupported string part: {part!r}")
     return re.compile("".join(parts), re.IGNORECASE | re.DOTALL)
+
+
+def applies(
+    rule: SigmaRule, product: str | None, service: str | None, category: str | None
+) -> bool:
+    """True if the event's logsource is one the rule is written for (unset rule keys match all)."""
+    ls = rule.logsource
+    return all(
+        want is None or want == have
+        for want, have in ((ls.product, product), (ls.service, service), (ls.category, category))
+    )
+
+
+def condition_fields(rule: SigmaRule) -> set[str]:
+    """Field names the rule's conditions compare, for the alert summary."""
+    found: set[str] = set()
+
+    def walk(node: Any) -> None:
+        if isinstance(node, ConditionFieldEqualsValueExpression):
+            found.add(node.field)
+        for arg in getattr(node, "args", ()):
+            walk(arg)
+
+    for cond in rule.detection.parsed_condition:
+        walk(cond.parse())
+    return found

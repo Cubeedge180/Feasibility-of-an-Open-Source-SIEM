@@ -1,2 +1,5 @@
 fastapi==0.142.2
 uvicorn==0.54.0
+pysigma==1.5.1
+# PostgreSQL driver; the binary wheel bundles libpq, so the slim image needs no system packages.
+psycopg[binary]==3.3.9

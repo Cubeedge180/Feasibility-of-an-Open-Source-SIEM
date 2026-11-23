@@ -4,6 +4,8 @@ WORKDIR /app
 COPY ingest/requirements.txt ingest/requirements.txt
 RUN pip install --no-cache-dir -r ingest/requirements.txt
 COPY ingest/ ingest/
+COPY detect/ detect/
+COPY normalize/ normalize/
 
 RUN useradd --create-home --uid 10001 siem
 USER siem
