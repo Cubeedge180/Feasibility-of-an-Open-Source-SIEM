@@ -203,7 +203,7 @@ or replaced; benign plan tested.
 | W23 (Apr 5-11) | Freeze: rules tag (`rules-frozen`) and `prereg-v1` on research-design.md. Only after Lucian says the supervisor items are in place, or records that they are not. |
 | W24 (Apr 12-18) | Prototype pass: F1 (3 timed installs), held-out + dev attack matrix from `ready`, F2 sampling, F6 run with internet reachable and a capture of the SIEM containers' network. |
 | W25 (Apr 19-25) | Wazuh pass from the same `ready` snapshot: default, then tuned. 24 h benign run per SIEM (F4). |
-| W26 (Apr 26 - May 2) | 2x2 run on the 80-alert set, blind rating, second rater on 20%, scoring incl. clustered bootstrap (still to be added to `eval/score_triage.py`, Claude, by March). |
+| W26 (Apr 26 - May 2) | 2x2 run on the 80-alert set, blind rating, second rater on 20%, scoring incl. clustered bootstrap (in `eval/score_triage.py` since 2026-11-23). |
 
 ## 2b. Code track (runs alongside the lab weeks)
 
@@ -219,7 +219,7 @@ module at the defence, so each piece ends with a short walkthrough for Lucian.
 | W6-W7 (Dec 7-20) | `ui/`: minimal alert list and alert detail | Demo, approval flow |
 | W9-W10 (Dec 28 - Jan 10) | Triage wired to stored alerts: normaliser text, playbooks, schema output, results records | 10-alert pilot (W11-W12) |
 | W14-W16 (Feb 1-21) | `response/` + `ui/`: human approval of proposed actions, audit log (MTTR); dev-set Sigma rules; F2 load-test and resource sampler | F2, approval claim, alert set |
-| W17-W20 (Feb 22 - Mar 21) | `eval/score_triage.py`: per-technique and technique-clustered bootstrap; wrong-playbook control runs | 2x2 analysis |
+| W17-W20 (Feb 22 - Mar 21) | `eval/score_triage.py`: per-technique and technique-clustered bootstrap (done 2026-11-23); wrong-playbook control runs | 2x2 analysis |
 | W21-W22 (Mar 22 - Apr 4) | Code freeze for detection: rules tagged `rules-frozen`; only bug fixes after this | prereg-v1, final runs |
 
 Today `detect/evaluator.py` evaluates a Sigma rule against one event in Python (the live

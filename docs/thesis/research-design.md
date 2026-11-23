@@ -175,7 +175,10 @@ Implemented in `eval/score_triage.py`.
   variants of one technique are correlated. Each test is repeated on
   per-technique means and with a technique-clustered bootstrap CI, and both
   are reported next to the per-alert result. If they disagree, the clustered
-  one is the one the claim relies on. (Not yet in `eval/score_triage.py`.)
+  one is the one the claim relies on. Each alert's cluster is the one ATT&CK
+  technique of its rule and playbook (benign alerts: the technique of the rule
+  that fired), read from `alerts.csv`; the clustered CI is for the per-alert
+  mean difference with whole techniques resampled.
 - An LLM is not used as the judge. A second model agreeing with the first is
   not independent verification.
 

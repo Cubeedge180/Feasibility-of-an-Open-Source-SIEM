@@ -10,8 +10,12 @@ Triage experiment (RQ2 in [docs/thesis/research-design.md](../docs/thesis/resear
 python -m eval.blind outputs.jsonl eval/results/<run>/    # hide conditions, make rating sheet
 # rate eval/results/<run>/ratings.csv by hand, without opening key.csv
 python -m eval.score_triage eval/results/<run>/key.csv eval/results/<run>/ratings.csv \
-    eval/results/<run>/scores.json
+    eval/triage_set/alerts.csv eval/results/<run>/scores.json
 ```
+
+`alerts.csv` (columns `alert_id,technique`) gives each alert its one ATT&CK
+technique, from the reference labels. The scores report each test per alert
+and technique-clustered; `claim_supported` is the clustered verdict.
 
 - `triage_set/`: the labelled alert set and reference labels (to come).
 - Feasibility scorecard (RQ1) and attack-run metrics (MTTD, MTTA, detection

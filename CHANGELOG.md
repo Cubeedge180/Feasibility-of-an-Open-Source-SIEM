@@ -8,6 +8,11 @@ No measured results exist yet; entries describe code, documents and lab setup on
 
 ## Unreleased (open pull requests)
 
+- **Knowledge graph and clustered scoring** (#13): `graphify-out/` holds a graphify knowledge graph
+  of code and docs, kept current by a Stop hook (`.claude/hooks/graphify-stale.sh`).
+  `score_triage` takes a required `alerts.csv` (one technique per alert) and repeats every test on
+  per-technique means with a technique-clustered bootstrap CI; `claim_supported` is the clustered
+  verdict (research design 4.5). Claim record and decision log link to the design and the code.
 - **Evidence-check fixes from the 2026-11-23 audit** (this PR): blinded outputs no longer show
   `playbook_step_id` (it revealed C2/C4 to the rater); `score_triage` refuses key outputs with no
   rating; Sigma `|re|i`, `|re|m`, `|re|s` flags are honoured; triage records store input text,
